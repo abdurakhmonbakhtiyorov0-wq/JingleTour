@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Палитра «Изумруд и шампань» — см. mockups/ui-variants.html, вариант 2 */
+@theme {
+  --color-pine: #0e3b36;
+  --color-pine-2: #16524b;
+  --color-champagne: #d6b88a;
+  --color-champagne-deep: #c7a46f;
+  --color-sand: #efe7da;
+  --color-sand-2: #e6dccb;
+  --color-ink: #1e2a28;
+  --color-muted: #55625f;
+  --color-mist: #cfdad5;
+  --color-line: #d9ccb6;
+
+  --font-display: var(--font-prata), Georgia, serif;
+  --font-sans: var(--font-manrope), Arial, sans-serif;
+
+  --radius-arch: 999px 999px 18px 18px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@utility wrap {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1200px;
+  padding-inline: 1rem;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  @media (width >= 48rem) {
+    padding-inline: 3rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background: var(--color-sand);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-champagne-deep);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--color-champagne);
+    color: var(--color-pine);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }

@@ -55,6 +55,18 @@ const EXTRA_PRICE_LINE =
 
 const EMOJI = /[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{1F3FB}-\u{1F3FF}️‍⃣]/gu;
 
+/** Слова, которые после перевода из капса снова пишутся с заглавной: страны и города. */
+const PLACE_STEMS = [
+  ...COUNTRIES.flatMap((c) => c.aliases.filter((a) => a.length >= 4 && /^[а-яё]/.test(a) && !a.includes(" "))),
+  "ташкент",
+  "самарканд",
+  "бухар",
+];
+const PLACE_WORD = new RegExp(
+  `(?<![\\p{L}])(?:${PLACE_STEMS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})[\\p{L}-]*`,
+  "gu",
+);
+
 /** Алиас ищется только в начале слова: «баку» найдётся в «Баку», но не в «табаку». */
 const COUNTRY_PATTERNS = COUNTRIES.map((country) => ({
   slug: country.slug,
@@ -317,7 +329,7 @@ export function extractTitle(text: string, countrySlug: CountrySlug | null): str
   const upper = letters.replace(/[^\p{Lu}]/gu, "");
   let title = line;
   if (letters.length > 10 && upper.length / letters.length > 0.8) {
-    const lower = line.toLowerCase();
+    const lower = line.toLowerCase().replace(PLACE_WORD, (word) => word.charAt(0).toUpperCase() + word.slice(1));
     title = lower.charAt(0).toUpperCase() + lower.slice(1);
   }
   if (title.length <= TITLE_MAX) return title;

@@ -34,13 +34,12 @@ export function tourCover(tour: Tour): string {
 }
 
 /**
- * Подпись страны с флагом: «🇹🇷 Турция».
+ * Название страны тура. Без флага-эмодзи: Windows показывает флаги буквами («TR»).
  * @param tour - тур
- * @returns подпись или null, если страна не определена
+ * @returns название или null, если страна не определена
  */
 export function tourCountryLabel(tour: Tour): string | null {
-  const country = getCountry(tour.countrySlug);
-  return country ? `${country.flag} ${country.name}` : null;
+  return getCountry(tour.countrySlug)?.name ?? null;
 }
 
 /**

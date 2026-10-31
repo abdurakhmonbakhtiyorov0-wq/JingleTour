@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# пример переменных окружения — в репозитории
+!.env.example
+
+# скриншоты scripts/screenshots.ts
+/screenshots

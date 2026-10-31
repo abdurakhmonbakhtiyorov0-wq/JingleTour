@@ -1,17 +1,23 @@
 import { z } from "zod";
-import { whatsappLink } from "@/lib/site";
+import { HONEYPOT_FIELD } from "@/lib/requests/constants";
 import { contactLink, formatAdminNotification, formatClientMessage, requestLines, type RequestPayload } from "@/lib/requests/format";
 import { aviaRequestSchema, tourRequestSchema } from "@/lib/requests/schema";
 import { toDetails, type RequestStore } from "@/lib/requests/store";
+import { whatsappLink } from "@/lib/site";
 
+export { HONEYPOT_FIELD };
 export const RATE_LIMIT = { max: 5, windowMs: 10 * 60 * 1000 } as const;
-/** Скрытое поле-ловушка: люди его не видят, боты заполняют. */
-export const HONEYPOT_FIELD = "website";
 
 export type RequestState =
   | { status: "idle" }
   | { status: "success"; whatsappUrl: string }
-  | { status: "error"; message: string; fieldErrors?: Partial<Record<string, string[]>> };
+  | {
+      status: "error";
+      message: string;
+      fieldErrors?: Partial<Record<string, string[]>>;
+      /** Что ввёл клиент — чтобы форма не очищалась после ошибки. */
+      values?: Record<string, string>;
+    };
 
 export interface SubmitDeps {
   /** null — Supabase не настроен; заявка только уйдёт в Telegram. */
@@ -37,10 +43,14 @@ const FALLBACK_ERROR =
  */
 export async function submitRequest(kind: RequestPayload["kind"], formData: FormData, deps: SubmitDeps): Promise<RequestState> {
   const raw = Object.fromEntries([...formData.entries()].filter(([key]) => !key.startsWith("$ACTION")));
+  const values = Object.fromEntries(
+    Object.entries(raw).filter((e): e is [string, string] => typeof e[1] === "string" && e[0] !== HONEYPOT_FIELD),
+  );
   const invalid = (error: z.ZodError): RequestState => ({
     status: "error",
     message: "Проверьте поля формы",
     fieldErrors: z.flattenError(error).fieldErrors,
+    values,
   });
 
   let payload: RequestPayload;
@@ -61,7 +71,7 @@ export async function submitRequest(kind: RequestPayload["kind"], formData: Form
   if (!deps.store && !deps.notify) {
     if (deps.isProduction) {
       console.error("[requests] ни Supabase, ни бот не настроены — заявка потеряна бы");
-      return { status: "error", message: FALLBACK_ERROR };
+      return { status: "error", message: FALLBACK_ERROR, values };
     }
     console.info("[requests] (dev) заявка:", formatClientMessage(payload));
     return { status: "success", whatsappUrl };
@@ -72,7 +82,11 @@ export async function submitRequest(kind: RequestPayload["kind"], formData: Form
     try {
       const recent = await deps.store.countSince(deps.ipHash, new Date(deps.now.getTime() - RATE_LIMIT.windowMs));
       if (recent >= RATE_LIMIT.max) {
-        return { status: "error", message: "Слишком много заявок подряд. Попробуйте через 10 минут или напишите нам напрямую." };
+        return {
+          status: "error",
+          message: "Слишком много заявок подряд. Попробуйте через 10 минут или напишите нам напрямую.",
+          values,
+        };
       }
       requestId = await deps.store.insert({
         kind,
@@ -83,7 +97,7 @@ export async function submitRequest(kind: RequestPayload["kind"], formData: Form
       });
     } catch (error) {
       console.error("[requests] не удалось сохранить заявку:", error);
-      if (!deps.notify) return { status: "error", message: FALLBACK_ERROR };
+      if (!deps.notify) return { status: "error", message: FALLBACK_ERROR, values };
     }
   }
 

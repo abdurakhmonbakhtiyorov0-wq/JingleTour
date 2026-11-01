@@ -93,11 +93,11 @@
   /* Тонкий шеврон вместо залитого треугольника */
   .select-ui::picker-icon {
     content: "";
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     margin-inline-start: auto;
-    border-right: 2px solid var(--color-pine-2);
-    border-bottom: 2px solid var(--color-pine-2);
+    border-right: 1.5px solid var(--color-pine-2);
+    border-bottom: 1.5px solid var(--color-pine-2);
     rotate: 45deg;
     translate: 0 -2px;
     transition:

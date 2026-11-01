@@ -47,7 +47,7 @@ function readFilters(params: Record<string, string | string[] | undefined>): Tou
 }
 
 const SELECT =
-  "min-h-11 w-full cursor-pointer rounded-full border border-line bg-sand px-4 text-[15px] focus:border-pine-2 focus:outline-none";
+  "min-h-11 w-full cursor-pointer rounded-full border border-line bg-sand pr-5 pl-4 text-[15px] focus:border-pine-2 focus:outline-none";
 
 async function ToursResults({ searchParams }: Pick<PageProps<"/tours">, "searchParams">) {
   const filters = readFilters(await searchParams);

@@ -72,7 +72,7 @@ interface SelectProps {
 /** Выпадающий список с той же линией снизу. */
 export function Select({ name, options, defaultValue }: SelectProps) {
   return (
-    <select id={name} name={name} defaultValue={defaultValue} className={`${INPUT} cursor-pointer`}>
+    <select id={name} name={name} defaultValue={defaultValue} className={`${INPUT} cursor-pointer pr-3`}>
       {options.map((o) => (
         <option key={o.value} value={o.value}>
           {o.label}

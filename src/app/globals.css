@@ -74,3 +74,72 @@
     }
   }
 }
+
+/*
+ * Выпадающие списки в стиле сайта. Работает в Chrome и Edge (customizable select);
+ * в остальных браузерах остаётся системный список — на телефонах он удобнее.
+ */
+@supports (appearance: base-select) {
+  .select-ui,
+  .select-ui::picker(select) {
+    appearance: base-select;
+  }
+
+  .select-ui {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Тонкий шеврон вместо залитого треугольника */
+  .select-ui::picker-icon {
+    content: "";
+    width: 8px;
+    height: 8px;
+    margin-inline-start: auto;
+    border-right: 2px solid var(--color-pine-2);
+    border-bottom: 2px solid var(--color-pine-2);
+    rotate: 45deg;
+    translate: 0 -2px;
+    transition:
+      rotate 0.2s,
+      translate 0.2s;
+  }
+
+  .select-ui:open::picker-icon {
+    rotate: 225deg;
+    translate: 0 2px;
+  }
+
+  .select-ui::picker(select) {
+    margin-block: 6px;
+    padding: 6px;
+    border: 1px solid var(--color-line);
+    border-radius: 18px;
+    background: var(--color-sand);
+    box-shadow: 0 18px 40px rgb(14 59 54 / 0.18);
+    font-family: var(--font-sans);
+  }
+
+  .select-ui option {
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: var(--color-ink);
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .select-ui option::checkmark {
+    display: none;
+  }
+
+  .select-ui option:hover,
+  .select-ui option:focus-visible {
+    background: var(--color-sand-2);
+    outline: none;
+  }
+
+  .select-ui option:checked {
+    background: var(--color-pine);
+    color: var(--color-sand);
+  }
+}

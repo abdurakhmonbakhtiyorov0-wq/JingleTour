@@ -48,6 +48,21 @@ describe("посты канала", () => {
     expect(photos.uploads.get("tours/100-p1-u.webp")?.toString()).toBe("webp:photos/p1.jpg");
   });
 
+  it("мелкое превью видео не сохраняется, тур создаётся без фото", async () => {
+    const thumbnail = { file_id: "v1", file_unique_id: "v1-u", width: 175, height: 320 };
+    const result = await run({ channel_post: post(103, { caption: TOUR_TEXT, video: { file_id: "v", file_unique_id: "v-u", thumbnail } }) });
+    expect(result.action).toBe("tour:created");
+    expect(store.tours.get(103)?.photos).toEqual([]);
+    expect(photos.uploads.size).toBe(0);
+  });
+
+  it("фото меньше минимальной ширины не сохраняется", async () => {
+    const small = [{ file_id: "s1", file_unique_id: "s1-u", width: 320, height: 240 }];
+    await run({ channel_post: post(104, { caption: TOUR_TEXT, photo: small }) });
+    expect(store.tours.get(104)?.photos).toEqual([]);
+    expect(photos.uploads.size).toBe(0);
+  });
+
   it("пост без #тур не трогает сайт", async () => {
     const result = await run({ channel_post: post(101, { text: "Поздравляем с праздником!" }) });
     expect(result.changed).toBe(false);

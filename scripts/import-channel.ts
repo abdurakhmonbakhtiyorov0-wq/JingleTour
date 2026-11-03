@@ -10,11 +10,13 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
+import sharp from "sharp";
 import { toWebp } from "@/lib/images/to-webp";
 import { site } from "@/lib/site";
 import { createAdminClient } from "@/lib/supabase/clients";
 import { oldestPostId, parseChannelPage, type ChannelWebPost } from "@/lib/telegram/channel-web";
 import { looksLikeTour, parseTourPost } from "@/lib/telegram/parse-post";
+import { MIN_PHOTO_WIDTH } from "@/lib/telegram/webhook";
 import { createSupabasePhotoStorage, createSupabaseTourStore } from "@/lib/tours/supabase-store";
 import type { Tour } from "@/lib/tours/types";
 
@@ -74,8 +76,13 @@ async function importPhotos(post: ChannelWebPost, upload: (path: string, data: B
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const webp = await toWebp(Buffer.from(await response.arrayBuffer()));
-      paths.push(await upload(`tours/${post.id}-import-${index}.webp`, webp));
+      const original = Buffer.from(await response.arrayBuffer());
+      const { width = 0 } = await sharp(original).metadata();
+      if (width < MIN_PHOTO_WIDTH) {
+        console.log(`  фото ${index + 1} поста ${post.id} пропущено: ширина ${width}px`);
+        continue;
+      }
+      paths.push(await upload(`tours/${post.id}-import-${index}.webp`, await toWebp(original)));
     } catch (error) {
       console.warn(`  фото ${index + 1} поста ${post.id} пропущено:`, error instanceof Error ? error.message : error);
     }

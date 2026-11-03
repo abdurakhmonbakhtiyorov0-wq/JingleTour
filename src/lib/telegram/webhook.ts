@@ -53,15 +53,19 @@ function isOurChannel(chat: TgChat, config: WebhookConfig): boolean {
   return chat.username?.toLowerCase() === config.channelUsername.toLowerCase();
 }
 
+/** Мельче этого на карточке будет мутно: превью видео всего 320px. Вместо них сайт покажет фото направления. */
+export const MIN_PHOTO_WIDTH = 480;
+
 /**
  * Лучшее фото поста: самое большое фото или превью видео/документа.
- * @returns фото или null, если в посте нет картинки
+ * @returns фото или null, если картинки нет или она слишком мелкая
  */
 export function pickPhoto(message: TgMessage): TgPhotoSize | null {
-  if (message.photo && message.photo.length > 0) {
-    return message.photo.reduce((best, p) => (p.width * p.height > best.width * best.height ? p : best));
-  }
-  return message.video?.thumbnail ?? message.animation?.thumbnail ?? message.document?.thumbnail ?? null;
+  const candidate =
+    message.photo && message.photo.length > 0
+      ? message.photo.reduce((best, p) => (p.width * p.height > best.width * best.height ? p : best))
+      : (message.video?.thumbnail ?? message.animation?.thumbnail ?? message.document?.thumbnail ?? null);
+  return candidate && candidate.width >= MIN_PHOTO_WIDTH ? candidate : null;
 }
 
 /**

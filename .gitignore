@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# служебные файлы Supabase CLI
+/supabase/.temp
+
 # vercel
 .vercel
 

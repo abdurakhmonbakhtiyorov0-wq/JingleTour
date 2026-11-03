@@ -59,7 +59,7 @@ npm run dev          # http://localhost:3000
    ```bash
    npx supabase login
    npx supabase link --project-ref <ref>
-   npx supabase db push
+   npx supabase db push --remote
    ```
    Docker для этого не нужен. Проверить, что появился bucket `tour-photos`.
 2. **Бот.** @BotFather → `/newbot` → токен в `TELEGRAM_BOT_TOKEN`. Добавить бота администратором канала — только админы-боты получают посты канала. Особых прав давать не нужно.

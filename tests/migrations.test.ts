@@ -7,7 +7,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
  * Проверяем миграции на PGlite (настоящий Postgres без Docker).
  * Storage-миграцию не накатываем: схемы storage есть только в Supabase.
  */
-const migration = readFileSync(join(__dirname, "../supabase/migrations/20261101000000_init.sql"), "utf8");
+const migrations = ["20261101000000_init.sql", "20261101000200_grants.sql"].map((file) =>
+  readFileSync(join(__dirname, "../supabase/migrations", file), "utf8"),
+);
 const db = new PGlite();
 
 const tour = (id: number, extra = "") => `
@@ -18,13 +20,11 @@ beforeAll(async () => {
   await db.exec(`
     create role anon nologin;
     create role authenticated nologin;
-    grant usage on schema public to anon, authenticated;
+    create role service_role nologin bypassrls;
+    grant usage on schema public to anon, authenticated, service_role;
   `);
-  await db.exec(migration);
-  await db.exec(`
-    grant select on all tables in schema public to anon, authenticated;
-    grant insert on public.requests to anon;
-  `);
+  // Права только из миграций: в новых проектах Supabase таблицы без GRANT недоступны
+  for (const migration of migrations) await db.exec(migration);
 });
 
 afterAll(async () => {
@@ -68,20 +68,39 @@ describe("миграция init", () => {
   it("посетитель не может читать и писать заявки напрямую", async () => {
     await db.exec(`insert into public.requests (kind, contact, ip_hash) values ('tour', '+998901234567', 'h')`);
     await db.exec("set role anon");
-    const { rows } = await db.query("select * from public.requests");
+    await expect(db.query("select * from public.requests")).rejects.toThrow(/permission denied/);
     await expect(
       db.exec(`insert into public.requests (kind, contact, ip_hash) values ('tour', '+998900000000', 'h')`),
-    ).rejects.toThrow(/row-level security/);
+    ).rejects.toThrow(/permission denied/);
     await db.exec("reset role");
-    expect(rows).toEqual([]);
   });
 
   it("посетитель не видит служебную таблицу фото", async () => {
     await db.exec(`insert into public.channel_media (message_id, media_group_id, file_id, file_unique_id)
                    values (1, 'g', 'f', 'u')`);
     await db.exec("set role anon");
-    const { rows } = await db.query("select * from public.channel_media");
+    await expect(db.query("select * from public.channel_media")).rejects.toThrow(/permission denied/);
     await db.exec("reset role");
-    expect(rows).toEqual([]);
+  });
+
+  it("посетитель не может менять туры", async () => {
+    await db.exec(tour(30));
+    await db.exec("set role anon");
+    await expect(db.exec("update public.tours set title = 'x' where id = 30")).rejects.toThrow(/permission denied/);
+    await db.exec("reset role");
+  });
+
+  it("сервер читает и пишет во все таблицы", async () => {
+    await db.exec("set role service_role");
+    await db.exec(tour(40));
+    await db.exec("update public.tours set is_visible = false where id = 40");
+    const { rows } = await db.query<{ id: number }>("select id from public.tours where id = 40");
+    await db.exec(`insert into public.requests (kind, contact, ip_hash) values ('avia', '+998901112233', 'h')`);
+    await db.exec("update public.requests set notified = true where contact = '+998901112233'");
+    await db.exec(`insert into public.channel_media (message_id, media_group_id, file_id, file_unique_id)
+                   values (2, 'g', 'f', 'u')`);
+    await db.exec("select * from public.channel_media");
+    await db.exec("reset role");
+    expect(rows).toHaveLength(1);
   });
 });

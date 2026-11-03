@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { site } from "@/lib/site";
 
@@ -7,8 +8,8 @@ export function SiteFooter() {
     <footer id="contacts" className="bg-pine text-sand">
       <div className="wrap grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="font-display text-3xl text-champagne">{site.name}</p>
-          <p className="mt-3 max-w-xs text-mist">
+          <Image src="/brand/logo-footer.svg" alt={site.name} width={1112} height={256} className="h-14 w-auto" />
+          <p className="mt-4 max-w-xs text-mist">
             Туры из Ташкента: пляжи, экскурсии, лечение, круизы и авиабилеты.
           </p>
         </div>

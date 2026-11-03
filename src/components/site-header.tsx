@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { MobileMenu } from "@/components/mobile-menu";
 import { buttonClass } from "@/components/ui";
@@ -15,9 +16,16 @@ export const NAV_LINKS = [
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-line/60 bg-sand/90 backdrop-blur">
-      <div className="wrap flex h-16 items-center gap-6 md:h-20">
-        <Link href="/" className="font-display text-2xl whitespace-nowrap text-pine">
-          {site.name}
+      <div className="wrap flex h-16 items-center gap-2 sm:gap-6 md:h-20">
+        <Link href="/" className="shrink-0">
+          <Image
+            src="/brand/logo-header.svg"
+            alt={site.name}
+            width={1112}
+            height={256}
+            priority
+            className="h-9 w-auto min-[360px]:h-10 md:h-12"
+          />
         </Link>
         <nav aria-label="Разделы сайта" className="ml-auto hidden gap-7 text-[15px] lg:flex">
           {NAV_LINKS.map((link) => (

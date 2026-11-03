@@ -30,8 +30,9 @@ export function TelegramPost({ post }: TelegramPostProps) {
   }, [post]);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div ref={holder} className="min-h-80 overflow-hidden rounded-2xl" />
+    <div className="flex min-w-0 flex-col gap-3">
+      {/* Виджет ставит iframe min-width: 320px, на узких телефонах это шире экрана */}
+      <div ref={holder} className="min-h-80 overflow-hidden rounded-2xl [&_iframe]:min-w-0!" />
       <a href={`https://t.me/${post}`} target="_blank" rel="noopener noreferrer" className="text-sm text-pine-2 underline underline-offset-4">
         Открыть в Telegram
       </a>

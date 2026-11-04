@@ -1,5 +1,5 @@
 import { getCountry } from "@/lib/countries";
-import { getDestination } from "@/lib/destinations";
+import { COUNTRY_PHOTOS } from "@/lib/tours/country-photos";
 import type { Tour, TourKind } from "@/lib/tours/types";
 
 export type TourSort = "soon" | "cheap" | "new";
@@ -25,12 +25,16 @@ export function nextDeparture(tour: Tour, today: string): string | null {
 }
 
 /**
- * Обложка тура: первое фото поста или фото направления.
+ * Обложка тура: первое фото поста или снимок страны.
+ * Снимок выбирается по id тура: так у туров одной страны обложки разные и не меняются между заходами.
  * @param tour - тур
  * @returns путь или ссылка на картинку
  */
 export function tourCover(tour: Tour): string {
-  return tour.photos[0] ?? getDestination(tour.countrySlug ?? "")?.image ?? FALLBACK_IMAGE;
+  if (tour.photos[0]) return tour.photos[0];
+  if (!tour.countrySlug) return FALLBACK_IMAGE;
+  const photos = COUNTRY_PHOTOS[tour.countrySlug];
+  return photos[tour.id % photos.length];
 }
 
 /**

@@ -85,4 +85,4 @@ npm run dev          # http://localhost:3000
 
 ## Фото
 
-Unsplash (лицензия Unsplash), Баку — Wikimedia Commons (CC0), Чжанцзяцзе — Kuruman, Wikimedia Commons ([CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)), атрибуция в подвале сайта.
+Unsplash (лицензия Unsplash) и Wikimedia Commons. Снимки Commons с авторами и лицензиями перечислены в `src/lib/photo-credits.ts` и показываются на странице `/photo-credits`: добавляя новый снимок, допишите его туда. Снимки стран для туров без своего фото — в `src/lib/tours/country-photos.ts`.

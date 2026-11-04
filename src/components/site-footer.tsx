@@ -71,14 +71,10 @@ export function SiteFooter() {
           <Link href="/about" className="hover:underline">
             О нас
           </Link>
+          <Link href="/photo-credits" className="hover:underline">
+            Авторы фото
+          </Link>
         </nav>
-        <p>
-          Фото: Unsplash, Wikimedia Commons (Kuruman,{" "}
-          <a href="https://creativecommons.org/licenses/by/2.0/" className="underline" rel="license noopener noreferrer" target="_blank">
-            CC BY 2.0
-          </a>
-          )
-        </p>
       </div>
     </footer>
   );

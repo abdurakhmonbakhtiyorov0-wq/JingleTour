@@ -71,7 +71,7 @@ async function TourDetails({ params }: Pick<PageProps<"/tours/[id]">, "params">)
 
       <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="flex flex-col gap-4">
-          <div className="relative aspect-4/5 overflow-hidden rounded-arch bg-sand-2">
+          <div className="relative aspect-4/5 overflow-hidden rounded-[18px] bg-sand-2">
             <Image src={photos[0]} alt={tour.title} fill priority sizes="(min-width: 1024px) 45vw, 92vw" className="object-cover" />
           </div>
           {photos.length > 1 && (

@@ -67,7 +67,8 @@ export async function POST(request: Request): Promise<Response> {
         siteUrl: site.url,
       },
     });
-    if (result.changed) revalidateTag(TOURS_CACHE_TAG, "max");
+    // expire: 0 — следующий посетитель сразу получит новые туры, а не старую копию
+    if (result.changed) revalidateTag(TOURS_CACHE_TAG, { expire: 0 });
     return Response.json({ ok: true, action: result.action });
   } catch (error) {
     console.error("[telegram webhook] апдейт", update.update_id, "не обработан:", error);

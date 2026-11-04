@@ -71,7 +71,8 @@ export async function getActiveTours(): Promise<ActiveTours> {
 
   try {
     const tours = await loadFromSupabase(now.toISOString());
-    cacheLife("hours");
+    // Истёкший тур пропадает со страниц максимум за час, даже если на них давно не заходили
+    cacheLife({ stale: 300, revalidate: 1800, expire: 3600 });
     return { tours, today };
   } catch (error) {
     console.error("[tours] не удалось загрузить туры:", error);

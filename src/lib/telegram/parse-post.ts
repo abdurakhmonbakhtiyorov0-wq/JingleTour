@@ -38,6 +38,10 @@ const DATE_SHORT = /(?<![\d.,])(\d{1,2})\.(\d{2})(?![.,\d])(?!\s*(?:млн|mln|�
 const DATE_WORDS =
   /(?<!\d)(\d{1,2})(?:\s*[-–—]\s*\d{1,2})?\s+(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)(?:\s+(\d{4}))?/giu;
 const RANGE_GLUE = /^\s*[-–—]\s*/;
+/** Строки со сроками акций и бронирования: их даты — не вылеты. */
+const PROMO_DATE_LINE = /(скидк|период\s+бронирования|бронир\p{L}*\s+до(?![\p{L}])|акци\p{L}*\s+(?:действует\s+)?до(?![\p{L}])|действует\s+до(?![\p{L}]))/iu;
+/** Срок бронирования снимает тур с сайта, если в посте нет дат вылета. */
+const BOOKING_DEADLINE_LINE = /(период\s+бронирования|бронир\p{L}*\s+до(?![\p{L}]))/iu;
 
 const NIGHTS = /(?<!\d)(\d{1,2})\s*[-–]?\s*(?:ноч|night|kecha)/iu;
 const DAYS = /(?<!\d)(\d{1,2})\s*[-–]?\s*(?:дн|дней|дня|дневн|kun)/iu;
@@ -221,7 +225,13 @@ function findDates(text: string, postedAt: Date): DateHit[] {
  */
 export function extractDates(text: string, postedAt: Date): { departures: string[]; expiresAt: Date } {
   const source = normalize(text);
-  const hits = findDates(source, postedAt);
+  const lineOf = (index: number) => {
+    const end = source.indexOf("\n", index);
+    return source.slice(source.lastIndexOf("\n", index) + 1, end === -1 ? undefined : end);
+  };
+  const allDates = findDates(source, postedAt);
+  const hits = allDates.filter((h) => !PROMO_DATE_LINE.test(lineOf(h.index)));
+  const deadlines = allDates.filter((h) => BOOKING_DEADLINE_LINE.test(lineOf(h.index)));
   const rangeEnds = new Set<DateHit>();
   for (let i = 0; i < hits.length - 1; i++) {
     const glue = source.slice(hits[i].end, hits[i + 1].index);
@@ -239,7 +249,7 @@ export function extractDates(text: string, postedAt: Date): { departures: string
     .sort()
     .slice(0, 12);
 
-  const latest = Math.max(...hits.map((h) => h.date.getTime()), Number.NEGATIVE_INFINITY);
+  const latest = Math.max(...(hits.length > 0 ? hits : deadlines).map((h) => h.date.getTime()), Number.NEGATIVE_INFINITY);
   const fallback = postedAt.getTime() + TOUR_TTL_DAYS * DAY_MS;
   const cap = postedAt.getTime() + MAX_TTL_DAYS * DAY_MS;
   const expires = latest >= postedAt.getTime() ? Math.min(latest + DAY_MS, cap) : fallback;

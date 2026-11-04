@@ -90,6 +90,23 @@ describe("extractDates", () => {
   it("не принимает цены за даты", () => {
     expect(extractDates("от 12.5 млн сум", posted).departures).toEqual([]);
   });
+  it("сроки акций и бронирования — не вылеты; без вылетов тур снимается после срока бронирования", () => {
+    const text = "Скидки до -50% на проживание (11.01.27-15.10.27)\nПериод бронирования: до 15.12.26\nБронируй до 09.12 и получай экскурсию";
+    const { departures, expiresAt } = extractDates(text, posted);
+    expect(departures).toEqual([]);
+    expect(expiresAt.toISOString().slice(0, 10)).toBe("2026-12-16");
+  });
+  it("при датах вылета срок бронирования не сокращает тур", () => {
+    const { expiresAt } = extractDates("Вылет 20.12.2026\nБронирование до: 10.12.2026", posted);
+    expect(expiresAt.toISOString().slice(0, 10)).toBe("2026-12-21");
+  });
+  it("скидка без дат вылета не продлевает тур", () => {
+    const { expiresAt } = extractDates("Скидки до -50% (11.01.27-15.10.27)", posted);
+    expect(expiresAt.getTime() - posted.getTime()).toBe(30 * 24 * 60 * 60 * 1000);
+  });
+  it("«Бронируй тур на» — это даты вылета", () => {
+    expect(extractDates("Бронируй тур на 05.12–12.12", posted).departures).toEqual(["2026-12-05"]);
+  });
   it("без дат тур живёт 30 дней", () => {
     const { departures, expiresAt } = extractDates("Летим в Дубай", posted);
     expect(departures).toEqual([]);

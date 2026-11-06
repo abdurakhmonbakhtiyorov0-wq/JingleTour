@@ -1,3 +1,4 @@
+import "server-only";
 export interface TelegramEnv {
   botToken: string;
   webhookSecret: string;

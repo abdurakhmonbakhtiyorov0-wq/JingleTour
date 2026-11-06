@@ -9,7 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "import:channel": "tsx --env-file-if-exists=.env.local scripts/import-channel.ts",
+    "import:channel": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/import-channel.ts",
     "check": "npm run typecheck && npm run lint && npm run test"
   },
   "dependencies": {

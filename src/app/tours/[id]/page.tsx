@@ -51,7 +51,6 @@ async function TourDetails({ params }: Pick<PageProps<"/tours/[id]">, "params">)
   if (!tour) notFound();
 
   const country = getCountry(tour.countrySlug);
-  const photos = tour.photos.length > 0 ? tour.photos : [tourCover(tour)];
   const kind = TOUR_KINDS.find((k) => k.value === tour.kind)?.label;
   const departures = tour.departureDates.filter((d) => d >= today);
   const similar = sortTours(
@@ -70,19 +69,35 @@ async function TourDetails({ params }: Pick<PageProps<"/tours/[id]">, "params">)
       </nav>
 
       <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+        {/* Фото поста — целиком, без обрезки: на постерах часто есть цены и даты. По клику — оригинал.
+            Снимок страны (своих фото нет) — в рамке 4:5, как раньше. */}
         <div className="flex flex-col gap-4">
-          <div className="relative aspect-4/5 overflow-hidden rounded-[18px] bg-sand-2">
-            <Image src={photos[0]} alt={tour.title} fill priority sizes="(min-width: 1024px) 45vw, 92vw" className="object-cover" />
-          </div>
-          {photos.length > 1 && (
-            <div className="grid grid-cols-3 gap-3">
-              {photos.slice(1, 4).map((src) => (
-                <div key={src} className="relative aspect-square overflow-hidden rounded-2xl">
-                  <Image src={src} alt="" fill sizes="15vw" className="object-cover" />
-                </div>
-              ))}
+          {tour.photos.length === 0 && (
+            <div className="relative aspect-4/5 overflow-hidden rounded-[18px] bg-sand-2">
+              <Image src={tourCover(tour)} alt={tour.title} fill priority sizes="(min-width: 1024px) 45vw, 92vw" className="object-cover" />
             </div>
           )}
+          {tour.photos.slice(0, 4).map((src, index) => (
+            <a
+              key={src}
+              href={src}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Открыть фото полностью"
+              className="block overflow-hidden rounded-[18px] bg-sand-2"
+            >
+              <Image
+                src={src}
+                alt={index === 0 ? tour.title : ""}
+                width={1200}
+                height={1500}
+                priority={index === 0}
+                quality={90}
+                sizes="(min-width: 1024px) 45vw, 92vw"
+                className="h-auto w-full"
+              />
+            </a>
+          ))}
         </div>
 
         <div>

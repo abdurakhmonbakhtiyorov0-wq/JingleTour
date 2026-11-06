@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Палитра «Изумруд и шампань» — см. mockups/ui-variants.html, вариант 2 */
+/* Палитра «Изумруд и шампань» */
 @theme {
   --color-pine: #0e3b36;
   --color-pine-2: #16524b;
